@@ -87,6 +87,36 @@ def get_subscribers():
         print(str(e))
         return jsonify({"error": "Failed to fetch subscribers", "details": str(e)}), 500
 
+@app.route("/delete/<password>/<email>", methods=["GET"])
+def delete_email(password, email):
+    try:
+        # Set your own secret password here
+        SECRET_PASSWORD = ""
+
+        if password != SECRET_PASSWORD:
+            return jsonify({"error": "Invalid password"}), 403
+
+        wb = load_workbook(EXCEL_FILE)
+        ws = wb.active
+
+        found = False
+        for row in range(2, ws.max_row + 1):  # Skip header
+            cell_email = ws[f"A{row}"].value
+            if cell_email == email:
+                ws.delete_rows(row)
+                wb.save(EXCEL_FILE)
+                found = True
+                break
+
+        if not found:
+            return jsonify({"error": "Email not found"}), 404
+
+        return jsonify({"message": f"Email '{email}' deleted successfully"}), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"error": "Something went wrong", "details": str(e)}), 500
+
 @app.route("/", methods=["GET"])
 def index():
     return jsonify({"message": "Hello, World from Newsletter!"}), 200
