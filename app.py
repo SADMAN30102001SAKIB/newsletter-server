@@ -67,6 +67,25 @@ def subscribe():
         print(str(e))
         return jsonify({"error": "Something went wrong", "details": str(e)}), 500
 
+@app.route("/subscribers", methods=["GET"])
+def get_subscribers():
+    try:
+        wb = load_workbook(EXCEL_FILE)
+        ws = wb.active
+
+        subscribers = []
+        for row in ws.iter_rows(min_row=2, values_only=True):  # skip header
+            email, date_subscribed = row
+            subscribers.append({
+                "email": email,
+                "date_subscribed": date_subscribed
+            })
+
+        return jsonify(subscribers), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"error": "Failed to fetch subscribers", "details": str(e)}), 500
 
 @app.route("/", methods=["GET"])
 def index():
